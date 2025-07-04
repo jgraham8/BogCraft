@@ -1,58 +1,80 @@
 ﻿using BogCraft.UI.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace BogCraft.UI.Components.Pages;
 
 public partial class Console : ComponentBase
 {
+    [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
+    
     private string _command = string.Empty;
     private LogLevel _activeFilter = LogLevel.Trace;
-    private ElementReference consoleElement;
     private bool _autoScroll = true;
-    private List<LogEntry> _logSnapshot = [];
+    private List<LogEntry> _filteredLogs = [];
+    private bool _shouldScrollToBottom = false;
 
     protected override async Task OnInitializedAsync()
     {
         ServerService.ConsoleOutput += OnConsoleOutput;
-        UpdateLogSnapshot();
+        UpdateFilteredLogs();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_autoScroll && consoleElement.Context != null)
+        if (_shouldScrollToBottom && _autoScroll)
         {
-            await consoleElement.FocusAsync();
+            await ScrollToBottom();
+            _shouldScrollToBottom = false;
         }
     }
 
     private void OnConsoleOutput(object? sender, string message)
     {
-        UpdateLogSnapshot();
+        UpdateFilteredLogs();
+        _shouldScrollToBottom = true;
         InvokeAsync(StateHasChanged);
     }
 
-    private void UpdateLogSnapshot()
+    private void UpdateFilteredLogs()
     {
-        _logSnapshot = LogService.CurrentLogs.ToList();
+        var allLogs = LogService.CurrentLogs.ToList();
+        _filteredLogs = _activeFilter == LogLevel.Trace ? 
+            allLogs : 
+            allLogs.Where(log => log.Level == _activeFilter).ToList();
     }
 
     private IEnumerable<LogEntry> GetFilteredLogs()
     {
-        return _activeFilter == LogLevel.Trace ? _logSnapshot : _logSnapshot.Where(log => log.Level == _activeFilter);
+        return _filteredLogs;
     }
 
     private void SetFilter(LogLevel level)
     {
         _activeFilter = level;
-        UpdateLogSnapshot();
+        UpdateFilteredLogs();
+        _shouldScrollToBottom = true;
+    }
+
+    private async Task ScrollToBottom()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scrollToBottom", "console-container");
+        }
+        catch (Exception ex)
+        {
+            // Silently handle JS interop failures
+            System.Console.WriteLine($"Scroll failed: {ex.Message}");
+        }
     }
 
     private string GetLogColor(LogLevel level) => level switch
     {
         LogLevel.Critical => "#ff0000",
-        LogLevel.Error => "#ff4444",
+        LogLevel.Error => "#ff4444", 
         LogLevel.Warning => "#ffaa00",
         LogLevel.Information => "#4488ff",
         LogLevel.Debug => "#888888",

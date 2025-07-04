@@ -1,13 +1,16 @@
 ﻿using BogCraft.UI.Components.Shared;
 using BogCraft.UI.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace BogCraft.UI.Components.Pages;
 
 public partial class Logs : ComponentBase
 {
-        private List<ArchivedSession> _archivedSessions = [];
+    [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
+    
+    private List<ArchivedSession> _archivedSessions = [];
     private bool _loading = true;
     private bool _showLogViewer = false;
     private ArchivedSession? _selectedSession;
@@ -50,17 +53,21 @@ public partial class Logs : ComponentBase
     {
         if (session == null) return;
         
-        // This would trigger a file download in a real implementation
-        // For now, we'll just show a message
-        var parameters = new DialogParameters
+        try
         {
-            ["ContentText"] = $"Export functionality would download logs for session: {session.SessionId}",
-            ["ButtonText"] = "OK",
-            ["Color"] = Color.Primary
-        };
-
-        var dialog = await DialogService.ShowAsync<ConfirmationDialog>("Export Logs", parameters);
-        await dialog.Result;
+            // Export the session
+            await LogService.ExportLogsAsync(session.SessionId);
+            
+            // Trigger download
+            var downloadUrl = $"/api/export/logs/{session.SessionId}?format=txt";
+            await JSRuntime.InvokeVoidAsync("open", downloadUrl, "_blank");
+            
+            Snackbar.Add($"Logs for {session.SessionId} exported!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Export failed: {ex.Message}", Severity.Error);
+        }
     }
 
     private string GetDuration(ArchivedSession session)

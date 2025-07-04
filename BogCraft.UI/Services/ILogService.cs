@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 
 namespace BogCraft.UI.Services;
 
@@ -13,7 +14,8 @@ public interface ILogService
     Task ArchiveSessionAsync();
     Task<List<ArchivedSession>> GetArchivedSessionsAsync();
     Task<ArchivedSession?> GetArchivedSessionAsync(string sessionId);
-    Task ExportLogsAsync(string sessionId, Stream output);
+    Task ExportLogsAsync(string sessionId, string format = "txt");
+    string? GetExportFilePath(string sessionId, string format = "txt");
 }
 
 public class LogService : ILogService
@@ -50,6 +52,7 @@ public class LogService : ILogService
     public LogService()
     {
         Directory.CreateDirectory(LogsDirectory);
+        Directory.CreateDirectory(Path.Combine("Data", "exports"));
     }
     
     public void AddLog(string message, LogLevel level = LogLevel.Information)
@@ -166,7 +169,7 @@ public class LogService : ILogService
         }
     }
     
-    public async Task ExportLogsAsync(string sessionId, Stream output)
+    public async Task ExportLogsAsync(string sessionId, string format = "txt")
     {
         ArchivedSession? session;
         
@@ -181,6 +184,9 @@ public class LogService : ILogService
             session = new ArchivedSession
             {
                 SessionId = CurrentSessionId,
+                StartTime = currentLogsCopy.Any() ? currentLogsCopy.First().Timestamp : DateTime.Now,
+                EndTime = DateTime.Now,
+                LogCount = currentLogsCopy.Count,
                 Logs = currentLogsCopy
             };
         }
@@ -191,12 +197,46 @@ public class LogService : ILogService
         
         if (session == null) return;
 
-        await using var writer = new StreamWriter(output, leaveOpen: true);
+        var fileName = $"{session.SessionId}_logs.{format}";
+        var exportContent = string.Empty;
         
-        foreach (var log in session.Logs)
+        if (format.ToLower() == "json")
         {
-            await writer.WriteLineAsync($"[{log.DisplayTime}] {log.Message}");
+            exportContent = JsonSerializer.Serialize(session, new JsonSerializerOptions 
+            { 
+                WriteIndented = true 
+            });
         }
+        else
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"# BogCraft Server Logs - {session.SessionId}");
+            sb.AppendLine($"# Exported: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            sb.AppendLine($"# Session Start: {session.StartTime:yyyy-MM-dd HH:mm:ss}");
+            sb.AppendLine($"# Session End: {session.EndTime:yyyy-MM-dd HH:mm:ss}");
+            sb.AppendLine($"# Total Logs: {session.LogCount}");
+            sb.AppendLine();
+            
+            foreach (var log in session.Logs)
+            {
+                sb.AppendLine($"[{log.DisplayTime}] [{log.Level}] {log.Message}");
+            }
+            exportContent = sb.ToString();
+        }
+        
+        // Save to exports directory
+        var exportsDir = Path.Combine("Data", "exports");
+        Directory.CreateDirectory(exportsDir);
+        var filePath = Path.Combine(exportsDir, fileName);
+        
+        await File.WriteAllTextAsync(filePath, exportContent);
+    }
+
+    public string? GetExportFilePath(string sessionId, string format = "txt")
+    {
+        var fileName = $"{sessionId}_logs.{format}";
+        var filePath = Path.Combine("Data", "exports", fileName);
+        return File.Exists(filePath) ? filePath : null;
     }
     
     private static string GenerateSessionId()

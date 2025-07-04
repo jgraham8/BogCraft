@@ -1,5 +1,6 @@
 ﻿using BogCraft.UI.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace BogCraft.UI.Components.Shared;
@@ -7,6 +8,9 @@ namespace BogCraft.UI.Components.Shared;
 public partial class SessionInfoCard : ComponentBase
 {
     [Parameter] public ILogService LogService { get; set; } = null!;
+    [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IDialogService DialogService { get; set; } = null!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
 
     private async Task ArchiveSession()
     {
@@ -48,9 +52,20 @@ public partial class SessionInfoCard : ComponentBase
 
     private async Task ExportLogs()
     {
-        // This would typically trigger a download
-        Snackbar.Add("Exporting logs...", Severity.Info);
-        // Implementation would depend on how you want to handle file downloads
+        try
+        {
+            await LogService.ExportLogsAsync(LogService.CurrentSessionId);
+            
+            // Trigger download
+            var downloadUrl = $"/api/export/logs/{LogService.CurrentSessionId}?format=txt";
+            await JSRuntime.InvokeVoidAsync("open", downloadUrl, "_blank");
+            
+            Snackbar.Add("Logs exported and download started!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Export failed: {ex.Message}", Severity.Error);
+        }
     }
 
     private string GetMemoryUsage()

@@ -1,5 +1,6 @@
 ﻿using BogCraft.UI.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace BogCraft.UI.Components.Pages;
@@ -9,6 +10,7 @@ public partial class Home : ComponentBase
     [Inject] private IMinecraftServerService ServerService { get; set; } = null!;
     [Inject] private ILogService LogService { get; set; } = null!;
     [Inject] private ISnackbar Snackbar { get; set; } = null!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = null!;
     
     private Timer? _uptimeTimer;
 
@@ -92,8 +94,20 @@ public partial class Home : ComponentBase
 
     private async Task ExportLogs()
     {
-        Snackbar.Add("Exporting logs...", Severity.Info);
-        // Export functionality would go here
+        try
+        {
+            await LogService.ExportLogsAsync(LogService.CurrentSessionId);
+            
+            // Trigger download
+            var downloadUrl = $"/api/export/logs/{LogService.CurrentSessionId}?format=txt";
+            await JSRuntime.InvokeVoidAsync("open", downloadUrl, "_blank");
+            
+            Snackbar.Add("Logs exported and download started!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Export failed: {ex.Message}", Severity.Error);
+        }
     }
 
     private string GetLocalIP()

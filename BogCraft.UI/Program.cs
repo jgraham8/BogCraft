@@ -11,6 +11,9 @@ builder.Services.AddMudServices();
 // Add SignalR
 builder.Services.AddSignalR();
 
+// Add Controllers for API endpoints
+builder.Services.AddControllers();
+
 // Add custom services in correct order
 builder.Services.AddSingleton<ISettingsService, SettingsService>();
 builder.Services.AddSingleton<ILogService, LogService>();
@@ -23,6 +26,13 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
+// Seed test data in development (optional)
+if (app.Environment.IsDevelopment())
+{
+    var logService = app.Services.GetRequiredService<ILogService>();
+    await TestDataSeeder.SeedTestDataAsync(logService);
+}
 
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
@@ -37,6 +47,9 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Map Controllers
+app.MapControllers();
 
 // Map SignalR hub
 app.MapHub<ServerConsoleHub>("/serverhub");

@@ -56,10 +56,14 @@
                                  OnClick="@(() => SetFilter(LogLevel.Debug))">
                             Debug
                         </MudChip>
+                        <MudSpacer />
+                        <MudSwitch @bind-Value="_autoScroll" 
+                                   Label="Auto-scroll" 
+                                   Color="Color.Primary" />
                     </MudStack>
                     
                     <!-- Console Output -->
-                    <MudPaper Class="console-output pa-4 mb-4" id="console-container">
+                    <div class="console-output pa-4 mb-4" id="console-container">
                         @foreach (var log in GetFilteredLogs())
                         {
                             <div class="console-line" style="color: @GetLogColor(log.Level)">
@@ -67,15 +71,22 @@
                                 <span class="console-message">@log.Message</span>
                             </div>
                         }
-                        @if (!LogService.CurrentLogs.Any())
+                        @if (!GetFilteredLogs().Any())
                         {
                             <div class="console-empty">
                                 <MudText Typo="Typo.body2" Class="mud-text-secondary">
-                                    No console output yet. Start the server to see logs appear here.
+                                    @if (_activeFilter == LogLevel.Trace)
+                                    {
+                                        <text>No console output yet. Start the server to see logs appear here.</text>
+                                    }
+                                    else
+                                    {
+                                        <text>No @_activeFilter.ToString().ToLower() logs found. Try changing the filter.</text>
+                                    }
                                 </MudText>
                             </div>
                         }
-                    </MudPaper>
+                    </div>
                     
                     <!-- Command Input -->
                     <MudGrid>
