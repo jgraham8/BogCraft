@@ -81,7 +81,7 @@ jobs:
         Compress-Archive -Path ./publish/* -DestinationPath bogcraft-ui-${{ github.run_number }}.zip
       shell: pwsh
         
-    - name: Upload build artifacts
+        - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: bogcraft-ui-${{ github.run_number }}
