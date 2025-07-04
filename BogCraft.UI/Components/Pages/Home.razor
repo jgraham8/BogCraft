@@ -1,0 +1,313 @@
+﻿@page "/"
+@implements IDisposable
+
+<PageTitle>Dashboard - BogCraft.UI Server</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.PlayArrow" Class="mr-2" />
+                            Server Actions
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid Spacing="2" AlignItems="AlignItems.Stretch">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudButton FullWidth="true" 
+                                       Size="Size.Large"
+                                       Color="Color.Success" 
+                                       StartIcon="@Icons.Material.Filled.PlayArrow"
+                                       Disabled="@ServerService.IsRunning"
+                                       OnClick="@StartServer"
+                                       Variant="Variant.Filled"
+                                       Style="height: 60px;">
+                                START SERVER
+                            </MudButton>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudMenu Style="width: 100%;">
+                                <ActivatorContent>
+                                    <MudButton FullWidth="true" 
+                                               Size="Size.Large"
+                                               Color="Color.Error" 
+                                               StartIcon="@Icons.Material.Filled.Stop"
+                                               Disabled="@(!ServerService.IsRunning)"
+                                               EndIcon="@Icons.Material.Filled.ArrowDropDown"
+                                               Variant="Variant.Filled"
+                                               Style="height: 60px;">
+                                        STOP SERVER
+                                    </MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem OnClick="@(() => StopServer(true))">
+                                        <div style="display: flex; align-items: center;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-2" /> Stop & Save
+                                        </div>
+                                    </MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => StopServer(false))">
+                                        <div style="display: flex; align-items: center;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Stop" Class="mr-2" /> Force Stop
+                                        </div>
+                                    </MudMenuItem>
+                                </ChildContent>
+                            </MudMenu>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudMenu Style="width: 100%;">
+                                <ActivatorContent>
+                                    <MudButton FullWidth="true" 
+                                               Size="Size.Large"
+                                               Color="Color.Warning" 
+                                               StartIcon="@Icons.Material.Filled.RestartAlt"
+                                               Disabled="@(!ServerService.IsRunning)"
+                                               EndIcon="@Icons.Material.Filled.ArrowDropDown"
+                                               Variant="Variant.Filled"
+                                               Style="height: 60px;">
+                                        RESTART SERVER
+                                    </MudButton>
+                                </ActivatorContent>
+                                <ChildContent>
+                                    <MudMenuItem OnClick="@(() => RestartServer(true))">
+                                        <div style="display: flex; align-items: center;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-2" /> Restart & Save
+                                        </div>
+                                    </MudMenuItem>
+                                    <MudMenuItem OnClick="@(() => RestartServer(false))">
+                                        <div style="display: flex; align-items: center;">
+                                            <MudIcon Icon="@Icons.Material.Filled.RestartAlt" Class="mr-2" /> Force Restart
+                                        </div>
+                                    </MudMenuItem>
+                                </ChildContent>
+                            </MudMenu>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudButton FullWidth="true" 
+                                       Size="Size.Large"
+                                       Color="Color.Info" 
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       Disabled="@(!ServerService.IsRunning)"
+                                       OnClick="@SaveWorld"
+                                       Variant="Variant.Filled"
+                                       Style="height: 60px;">
+                                SAVE WORLD
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Elevation="3" Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Computer" Class="mr-2" />
+                            Server Status
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack>
+                        <MudAlert Severity="@GetSeverity()" 
+                                  Icon="@GetStatusIcon()" 
+                                  ContentAlignment="HorizontalAlignment.Center">
+                            <MudText Typo="Typo.h6">
+                                @(ServerService.IsRunning ? "ONLINE" : "OFFLINE")
+                            </MudText>
+                        </MudAlert>
+                        
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Version:</MudText>
+                                <MudText Typo="Typo.body1">1.21.1 NeoForge</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Uptime:</MudText>
+                                <MudText Typo="Typo.body1">@GetUptime()</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Players:</MudText>
+                                <MudText Typo="Typo.body1">@ServerService.PlayerCount</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Auto-Restart:</MudText>
+                                <MudText Typo="Typo.body1">@(ServerService.AutoRestartEnabled ? "Enabled" : "Disabled")</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Elevation="3" Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Article" Class="mr-2" />
+                            Current Session
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="Icons.Material.Filled.Archive" 
+                                       Color="Color.Secondary" 
+                                       Size="Size.Small"
+                                       OnClick="@ArchiveSession"
+                                       Title="Archive Current Session" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack>
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Session ID:</MudText>
+                                <MudText Typo="Typo.body1">@LogService.CurrentSessionId</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Total Logs:</MudText>
+                                <MudText Typo="Typo.body1">@LogService.CurrentLogCount</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">Memory Usage:</MudText>
+                                <MudText Typo="Typo.body1">@GetMemoryUsage()</MudText>
+                            </MudItem>
+                        </MudGrid>
+                        
+                        <MudDivider />
+                        
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton StartIcon="Icons.Material.Filled.Clear" 
+                                       Color="Color.Default" 
+                                       Size="Size.Small"
+                                       OnClick="@ClearLogs">
+                                Clear Logs
+                            </MudButton>
+                            <MudButton StartIcon="Icons.Material.Filled.Download" 
+                                       Color="Color.Primary" 
+                                       Size="Size.Small"
+                                       OnClick="@ExportLogs">
+                                Export Logs
+                            </MudButton>
+                        </MudStack>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Elevation="3" Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Group" Class="mr-2" />
+                            Players Online (@ServerService.PlayerCount)
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="Icons.Material.Filled.Refresh" 
+                                       Color="Color.Primary" 
+                                       Size="Size.Small"
+                                       Disabled="@(!ServerService.IsRunning)"
+                                       OnClick="@RefreshPlayers"
+                                       Title="Refresh Player List" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (ServerService.IsRunning)
+                    {
+                        @if (ServerService.PlayerList.Any())
+                        {
+                            <MudList T="string">
+                                @foreach (var player in ServerService.PlayerList)
+                                {
+                                    <MudListItem T="string" Icon="Icons.Material.Filled.Person">
+                                        <MudText>@player</MudText>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Icon="Icons.Material.Filled.Info">
+                                No players currently online
+                            </MudAlert>
+                        }
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Icon="Icons.Material.Filled.Warning">
+                            Server is offline
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="6">
+            <MudCard Elevation="3" Style="height: 100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Network" Class="mr-2" />
+                            Network Information
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudAlert Severity="Severity.Info" Icon="Icons.Material.Filled.Info">
+                        <MudText>
+                            <strong>Network Access:</strong> This console is accessible from other devices on your network at:
+                            <br />
+                            <strong>http://@GetLocalIP():5091</strong>
+                        </MudText>
+                    </MudAlert>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Terminal" Class="mr-2" />
+                            Recent Console Output
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton StartIcon="Icons.Material.Filled.Terminal" 
+                                   Color="Color.Primary" 
+                                   Href="/console">
+                            Full Console
+                        </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudPaper Class="console-output pa-4" Style="height: 300px; overflow-y: auto; background-color: #1e1e1e; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px;">
+                        @if (LogService.CurrentLogs.Any())
+                        {
+                            @foreach (var log in LogService.CurrentLogs.TakeLast(10))
+                            {
+                                <div style="color: @GetLogColor(log.Level); margin-bottom: 2px;">
+                                    <span style="color: #888;">[@log.DisplayTime]</span> @log.Message
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #888;">
+                                No console output yet...
+                            </div>
+                        }
+                    </MudPaper>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

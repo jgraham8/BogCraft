@@ -1,0 +1,132 @@
+﻿@page "/players"
+@implements IDisposable
+
+<PageTitle>Players - BogCraft.UI Server</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Group" Class="mr-2" />
+                            Players Online (@_players.Count)
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                       Color="Color.Primary"
+                                       Disabled="@(!ServerService.IsRunning || _isRefreshing)"
+                                       OnClick="@RefreshPlayers"
+                                       Title="Refresh Player List" 
+                                       Variant="Variant.Filled"/>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (_isRefreshing)
+                    {
+                        <div class="d-flex justify-center">
+                            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                        </div>
+                    }
+                    else if (ServerService.IsRunning)
+                    {
+                        @if (_players.Any())
+                        {
+                            <MudList T="string" Clickable="false">
+                                @foreach (var player in _players)
+                                {
+                                    <MudListItem Icon="@Icons.Material.Filled.Person">
+                                        <MudGrid AlignItems="AlignItems.Center">
+                                            <MudItem xs="8">
+                                                <MudText Typo="Typo.body1">@player</MudText>
+                                            </MudItem>
+                                            <MudItem xs="4" Class="text-right">
+                                                <MudMenu Icon="@Icons.Material.Filled.MoreVert" Size="Size.Small">
+                                                    <MudMenuItem OnClick="@(() => KickPlayer(player))">
+                                                        <div style="display: flex; align-items: center;">
+                                                            <MudIcon Icon="@Icons.Material.Filled.PersonRemove" Class="mr-2" /> Kick Player
+                                                        </div>
+                                                    </MudMenuItem>
+                                                    <MudMenuItem OnClick="@(() => SendPrivateMessage(player))">
+                                                        <div style="display: flex; align-items: center;">
+                                                            <MudIcon Icon="@Icons.Material.Filled.Message" Class="mr-2" /> Send Message
+                                                        </div>
+                                                    </MudMenuItem>
+                                                </MudMenu>
+                                            </MudItem>
+                                        </MudGrid>
+                                    </MudListItem>
+                                    <MudDivider />
+                                }
+                            </MudList>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
+                                No players currently online
+                            </MudAlert>
+                        }
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
+                            Server is offline
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Class="mr-2" />
+                            Server Commands
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack>
+                        <MudTextField @bind-Value="@_broadcastMessage"
+                                      Label="Broadcast Message"
+                                      Placeholder="Enter message to all players..."
+                                      Disabled="@(!ServerService.IsRunning)" />
+                        <MudButton FullWidth="true"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Campaign"
+                                   Disabled="@(!ServerService.IsRunning || string.IsNullOrWhiteSpace(_broadcastMessage))"
+                                   OnClick="@BroadcastMessage"
+                                   Variant="Variant.Filled">
+                            Send Broadcast
+                        </MudButton>
+
+                        <MudDivider Class="my-2" />
+
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudButton FullWidth="true" Color="Color.Warning" StartIcon="@Icons.Material.Filled.AccessTime" Disabled="@(!ServerService.IsRunning)" OnClick="@(() => SendCommand("time set day"))"
+                                           Variant="Variant.Filled">Set Day</MudButton>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudButton FullWidth="true" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.NightsStay" Disabled="@(!ServerService.IsRunning)" OnClick="@(() => SendCommand("time set night"))"
+                                           Variant="Variant.Filled">Set Night</MudButton>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudButton FullWidth="true" Color="Color.Success" StartIcon="@Icons.Material.Filled.WbSunny" Disabled="@(!ServerService.IsRunning)" OnClick="@(() => SendCommand("weather clear"))"
+                                           Variant="Variant.Filled">Clear Weather</MudButton>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudButton FullWidth="true" Color="Color.Info" StartIcon="@Icons.Material.Filled.CloudQueue" Disabled="@(!ServerService.IsRunning)" OnClick="@(() => SendCommand("weather rain"))"
+                                           Variant="Variant.Filled">Make it Rain</MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

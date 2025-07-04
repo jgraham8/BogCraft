@@ -1,0 +1,42 @@
+﻿@implements IDisposable
+
+<MudCard Elevation="3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="Icons.Material.Filled.Computer" Class="mr-2" />
+                Server Status
+            </MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudStack>
+            <MudAlert Severity="@GetSeverity()" 
+                      Icon="@GetStatusIcon()" 
+                      ContentAlignment="HorizontalAlignment.Center">
+                <MudText Typo="Typo.h6">
+                    @(ServerService.IsRunning ? "ONLINE" : "OFFLINE")
+                </MudText>
+            </MudAlert>
+            
+            <MudGrid>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Version:</MudText>
+                    <MudText Typo="Typo.body1">1.21.1 NeoForge</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Uptime:</MudText>
+                    <MudText Typo="Typo.body1">@GetUptime()</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Players:</MudText>
+                    <MudText Typo="Typo.body1">@ServerService.PlayerCount</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Auto-Restart:</MudText>
+                    <MudText Typo="Typo.body1">@(ServerService.AutoRestartEnabled ? "Enabled" : "Disabled")</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudStack>
+    </MudCardContent>
+</MudCard>

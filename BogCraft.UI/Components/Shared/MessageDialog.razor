@@ -1,0 +1,24 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-width: none;">
+            <MudText Typo="Typo.h6" Class="mb-4">
+                Send Private Message to @PlayerName
+            </MudText>
+            
+            <MudTextField @bind-Value="@Message"
+                          Label="Message"
+                          Placeholder="Enter your message..."
+                          Lines="3"
+                          AutoFocus="true"
+                          OnKeyPress="@OnKeyPress" />
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Disabled="@string.IsNullOrWhiteSpace(Message)"
+                   OnClick="Submit">
+            Send Message
+        </MudButton>
+    </DialogActions>
+</MudDialog>

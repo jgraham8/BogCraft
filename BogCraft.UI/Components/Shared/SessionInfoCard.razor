@@ -1,0 +1,55 @@
+﻿@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudCard Elevation="3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="Icons.Material.Filled.Article" Class="mr-2" />
+                Current Session
+            </MudText>
+        </CardHeaderContent>
+        <CardHeaderActions>
+            <MudIconButton Icon="Icons.Material.Filled.Archive" 
+                           Color="Color.Secondary" 
+                           Size="Size.Small"
+                           OnClick="@ArchiveSession"
+                           Title="Archive Current Session" />
+        </CardHeaderActions>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudStack>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Session ID:</MudText>
+                    <MudText Typo="Typo.body1">@LogService.CurrentSessionId</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Total Logs:</MudText>
+                    <MudText Typo="Typo.body1">@LogService.CurrentLogCount</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">Memory Usage:</MudText>
+                    <MudText Typo="Typo.body1">@GetMemoryUsage()</MudText>
+                </MudItem>
+            </MudGrid>
+            
+            <MudDivider />
+            
+            <MudStack Row="true" Spacing="2">
+                <MudButton StartIcon="Icons.Material.Filled.Clear" 
+                           Color="Color.Default" 
+                           Size="Size.Small"
+                           OnClick="@ClearLogs">
+                    Clear Logs
+                </MudButton>
+                <MudButton StartIcon="Icons.Material.Filled.Download" 
+                           Color="Color.Primary" 
+                           Size="Size.Small"
+                           OnClick="@ExportLogs">
+                    Export Logs
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    </MudCardContent>
+</MudCard>

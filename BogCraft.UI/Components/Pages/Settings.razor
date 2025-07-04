@@ -1,0 +1,162 @@
+﻿@page "/settings"
+@inject IMinecraftServerService ServerService
+@inject IThemeService ThemeService
+@inject ISettingsService SettingsService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Settings - BogCraft.UI Server</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudGrid>
+        <!-- Server Settings -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Settings" Class="mr-2" />
+                            Server Settings
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack>
+                        <MudSwitch @bind-Value="@_autoRestartEnabled" 
+                                   Color="Color.Primary"
+                                   Label="Enable Auto-Restart"
+                                   OnChange="@OnAutoRestartChanged" />
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                            When enabled, the server will automatically restart daily at 00:00 GMT/BST for maintenance.
+                        </MudText>
+                        
+                        <MudDivider />
+                        
+                        <MudText Typo="Typo.h6">Server Path</MudText>
+                        <MudTextField @bind-Value="@_serverPath" 
+                                      Label="Server Directory"
+                                      OnBlur="@OnServerPathChanged"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="Icons.Material.Filled.Folder" />
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                            The directory where the Minecraft server files are located.
+                        </MudText>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        
+        <!-- Console Settings -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Terminal" Class="mr-2" />
+                            Console Settings
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack>
+                        <MudSlider @bind-Value="@_maxLogs" 
+                                   Min="100" 
+                                   Max="5000" 
+                                   Step="100"
+                                   Color="Color.Primary"
+                                   OnChange="@OnMaxLogsChanged">
+                            <MudText>Max Console Logs: @_maxLogs</MudText>
+                        </MudSlider>
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                            Maximum number of console logs to keep in memory before old logs are removed.
+                        </MudText>
+                        
+                        <MudSwitch @bind-Value="@_autoScroll" 
+                                   Color="Color.Primary"
+                                   Label="Auto-scroll Console"
+                                   OnChange="@OnAutoScrollChanged" />
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                            Automatically scroll to the bottom of the console when new logs appear.
+                        </MudText>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        
+        <!-- Network Information -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Network" Class="mr-2" />
+                            Network Information
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack>
+                        <MudTextField Value="@_localAddress" 
+                                      Label="Local Address"
+                                      ReadOnly="true"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="Icons.Material.Filled.ContentCopy"
+                                      OnAdornmentClick="@(() => CopyToClipboard(_localAddress))" />
+                        
+                        <MudTextField Value="@_networkAddress" 
+                                      Label="Network Address"
+                                      ReadOnly="true"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="Icons.Material.Filled.ContentCopy"
+                                      OnAdornmentClick="@(() => CopyToClipboard(_networkAddress))" />
+                        
+                        <MudAlert Severity="Severity.Info" Icon="Icons.Material.Filled.Info">
+                            Share the network address with other devices on your local network to give them access to this control panel.
+                        </MudAlert>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        
+        <!-- System Information -->
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Info" Class="mr-2" />
+                            System Information
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudButton StartIcon="Icons.Material.Filled.Save" 
+                                   Color="Color.Secondary" 
+                                   OnClick="@ManualSave">
+                            Save All Settings
+                        </MudButton>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="6" md="3">
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">Application Version:</MudText>
+                            <MudText Typo="Typo.body1">1.0.0</MudText>
+                        </MudItem>
+                        <MudItem xs="6" md="3">
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">Framework:</MudText>
+                            <MudText Typo="Typo.body1">.NET 9.0</MudText>
+                        </MudItem>
+                        <MudItem xs="6" md="3">
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">Platform:</MudText>
+                            <MudText Typo="Typo.body1">@Environment.OSVersion.Platform</MudText>
+                        </MudItem>
+                        <MudItem xs="6" md="3">
+                            <MudText Typo="Typo.body2" Class="mud-text-secondary">Settings File:</MudText>
+                            <MudText Typo="Typo.body1">@(_settingsLoaded ? "Loaded" : "Default")</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

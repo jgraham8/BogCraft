@@ -1,0 +1,7 @@
+{
+  "AutoRestartEnabled": true,
+  "AutoScroll": true,
+  "MaxLogs": 1000,
+  "ServerPath": "D:/NeoBogged",
+  "DarkMode": true
+}

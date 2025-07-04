@@ -1,0 +1,109 @@
+﻿@page "/console"
+@inject IMinecraftServerService ServerService
+@inject ILogService LogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+<PageTitle>Console - BogCraft.UI Server</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="Icons.Material.Filled.Terminal" Class="mr-2" />
+                            Server Console
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChipSet T="string">
+                            <MudChip T="string" Label="true" 
+                                     Color="@(ServerService.IsRunning ? Color.Success : Color.Error)"
+                                     Icon="@(ServerService.IsRunning ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)">
+                                @(ServerService.IsRunning ? "ONLINE" : "OFFLINE")
+                            </MudChip>
+                        </MudChipSet>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <!-- Log Filters -->
+                    <MudStack Row="true" Spacing="2" Class="mb-4">
+                        <MudChip T="string" Label="true" 
+                                 Color="@(_activeFilter == LogLevel.Trace ? Color.Primary : Color.Default)"
+                                 OnClick="@(() => SetFilter(LogLevel.Trace))">
+                            All
+                        </MudChip>
+                        <MudChip T="string" Label="true" 
+                                 Color="@(_activeFilter == LogLevel.Error ? Color.Error : Color.Default)"
+                                 OnClick="@(() => SetFilter(LogLevel.Error))">
+                            Errors
+                        </MudChip>
+                        <MudChip T="string" Label="true" 
+                                 Color="@(_activeFilter == LogLevel.Warning ? Color.Warning : Color.Default)"
+                                 OnClick="@(() => SetFilter(LogLevel.Warning))">
+                            Warnings
+                        </MudChip>
+                        <MudChip T="string" Label="true" 
+                                 Color="@(_activeFilter == LogLevel.Information ? Color.Info : Color.Default)"
+                                 OnClick="@(() => SetFilter(LogLevel.Information))">
+                            Info
+                        </MudChip>
+                        <MudChip T="string" Label="true" 
+                                 Color="@(_activeFilter == LogLevel.Debug ? Color.Tertiary : Color.Default)"
+                                 OnClick="@(() => SetFilter(LogLevel.Debug))">
+                            Debug
+                        </MudChip>
+                    </MudStack>
+                    
+                    <!-- Console Output -->
+                    <MudPaper Class="console-output pa-4 mb-4" id="console-container">
+                        @foreach (var log in GetFilteredLogs())
+                        {
+                            <div class="console-line" style="color: @GetLogColor(log.Level)">
+                                <span class="console-time">[@log.DisplayTime]</span>
+                                <span class="console-message">@log.Message</span>
+                            </div>
+                        }
+                        @if (!LogService.CurrentLogs.Any())
+                        {
+                            <div class="console-empty">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                                    No console output yet. Start the server to see logs appear here.
+                                </MudText>
+                            </div>
+                        }
+                    </MudPaper>
+                    
+                    <!-- Command Input -->
+                    <MudGrid>
+                        <MudItem xs="12" sm="8" md="9">
+                            <MudTextField @bind-Value="@_command"
+                                          Label="Server Command"
+                                          Placeholder="Enter server command..."
+                                          Disabled="@(!ServerService.IsRunning)"
+                                          OnKeyPress="@OnKeyPress"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="Icons.Material.Filled.ChevronRight" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4" md="3">
+                            <MudButton FullWidth="true"
+                                       Color="Color.Primary"
+                                       StartIcon="Icons.Material.Filled.Send"
+                                       Disabled="@(!ServerService.IsRunning || string.IsNullOrWhiteSpace(_command))"
+                                       OnClick="@SendCommand">
+                                Send Command
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    
+}

@@ -1,0 +1,35 @@
+﻿.console-output {
+    background-color: #1e1e1e;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    height: 500px;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #444;
+}
+
+.console-line {
+    margin-bottom: 2px;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.console-time {
+    color: #888;
+    margin-right: 8px;
+}
+
+.console-message {
+    color: inherit;
+}
+
+.console-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}

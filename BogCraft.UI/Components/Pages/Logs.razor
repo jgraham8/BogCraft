@@ -1,0 +1,150 @@
+﻿@page "/logs"
+@inject ILogService LogService
+@inject IDialogService DialogService
+
+<PageTitle>Log Archive - BogCraft.UI Server</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge">
+    <MudCard Elevation="3">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h6">
+                    <MudIcon Icon="Icons.Material.Filled.Archive" Class="mr-2" />
+                    Archived Log Sessions
+                </MudText>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudButton StartIcon="Icons.Material.Filled.Refresh" 
+                           Color="Color.Primary" 
+                           OnClick="@LoadArchivedSessions">
+                    Refresh
+                </MudButton>
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            @if (_loading)
+            {
+                <MudProgressLinear Indeterminate="true" />
+            }
+            else if (_archivedSessions.Any())
+            {
+                <MudTable Items="@_archivedSessions" 
+                          Hover="true" 
+                          Dense="true" 
+                          Striped="true">
+                    <HeaderContent>
+                        <MudTh>Session ID</MudTh>
+                        <MudTh>Start Time</MudTh>
+                        <MudTh>End Time</MudTh>
+                        <MudTh>Duration</MudTh>
+                        <MudTh>Log Count</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Session ID">@context.SessionId</MudTd>
+                        <MudTd DataLabel="Start Time">@context.StartTime.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+                        <MudTd DataLabel="End Time">@context.EndTime.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+                        <MudTd DataLabel="Duration">@GetDuration(context)</MudTd>
+                        <MudTd DataLabel="Log Count">@context.LogCount</MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudButtonGroup>
+                                <MudButton StartIcon="Icons.Material.Filled.Visibility" 
+                                           Color="Color.Primary" 
+                                           Size="Size.Small"
+                                           OnClick="@(() => ViewSession(context))">
+                                    View
+                                </MudButton>
+                                <MudButton StartIcon="Icons.Material.Filled.Download" 
+                                           Color="Color.Secondary" 
+                                           Size="Size.Small"
+                                           OnClick="@(() => ExportSession(context))">
+                                    Export
+                                </MudButton>
+                            </MudButtonGroup>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Icon="Icons.Material.Filled.Info">
+                    No archived sessions found. Sessions are automatically created when the server restarts or when manually archived.
+                </MudAlert>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+<!-- Log Viewer Dialog -->
+<MudDialog @bind-IsVisible="_showLogViewer" Options="_dialogOptions">
+    <DialogContent>
+        <MudContainer Style="max-width: none;">
+            <MudText Typo="Typo.h6" Class="mb-4">
+                Session: @_selectedSession?.SessionId
+            </MudText>
+            
+            @if (_selectedSession != null)
+            {
+                <MudGrid Class="mb-4">
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Start Time:</MudText>
+                        <MudText>@_selectedSession.StartTime.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">End Time:</MudText>
+                        <MudText>@_selectedSession.EndTime.ToString("yyyy-MM-dd HH:mm:ss")</MudText>
+                    </MudItem>
+                    <MudItem xs="4">
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">Total Logs:</MudText>
+                        <MudText>@_selectedSession.LogCount</MudText>
+                    </MudItem>
+                </MudGrid>
+                
+                <!-- Log Filter Chips -->
+                <MudChipSet T="LogLevel" Class="mb-4">
+                    <MudChip T="LogLevel" Value="LogLevel.Trace" Label="true" 
+                             Color="@(_logFilter == LogLevel.Trace ? Color.Primary : Color.Default)"
+                             OnClick="@(() => SetLogFilter(LogLevel.Trace))">
+                        All
+                    </MudChip>
+                    <MudChip T="LogLevel" Value="LogLevel.Error" Label="true" 
+                             Color="@(_logFilter == LogLevel.Error ? Color.Error : Color.Default)"
+                             OnClick="@(() => SetLogFilter(LogLevel.Error))">
+                        Errors
+                    </MudChip>
+                    <MudChip T="LogLevel" Value="LogLevel.Warning" Label="true" 
+                             Color="@(_logFilter == LogLevel.Warning ? Color.Warning : Color.Default)"
+                             OnClick="@(() => SetLogFilter(LogLevel.Warning))">
+                        Warnings
+                    </MudChip>
+                    <MudChip T="LogLevel" Value="LogLevel.Information" Label="true" 
+                             Color="@(_logFilter == LogLevel.Information ? Color.Info : Color.Default)"
+                             OnClick="@(() => SetLogFilter(LogLevel.Information))">
+                        Info
+                    </MudChip>
+                </MudChipSet>
+                
+                <MudPaper Class="console-output pa-4" Style="height: 400px; overflow-y: auto;">
+                    @foreach (var log in GetFilteredSessionLogs())
+                    {
+                        <div style="color: @GetLogColor(log.Level); margin-bottom: 2px;">
+                            <span style="color: #888;">[@log.DisplayTime]</span> @log.Message
+                        </div>
+                    }
+                </MudPaper>
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Default" OnClick="@(() => _showLogViewer = false)">Close</MudButton>
+        <MudButton Color="Color.Primary" 
+                   StartIcon="Icons.Material.Filled.Download"
+                   OnClick="@(() => ExportSession(_selectedSession))">
+            Export
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+
+</style>

@@ -1,0 +1,84 @@
+﻿@inject ISnackbar Snackbar
+
+<MudCard Elevation="3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="Icons.Material.Filled.PlayArrow" Class="mr-2" />
+                Server Actions
+            </MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudButton FullWidth="true" 
+                           Color="Color.Success" 
+                           StartIcon="Icons.Material.Filled.PlayArrow"
+                           Disabled="@ServerService.IsRunning"
+                           OnClick="@StartServer">
+                    Start Server
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudMenu>
+                    <ActivatorContent>
+                        <MudButton FullWidth="true" 
+                                   Color="Color.Error" 
+                                   StartIcon="Icons.Material.Filled.Stop"
+                                   Disabled="@(!ServerService.IsRunning)"
+                                   EndIcon="Icons.Material.Filled.ArrowDropDown">
+                            Stop Server
+                        </MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem OnClick="@(() => StopServer(true))">
+                            <div style="display: flex; align-items: center;">
+                                <MudIcon Icon="Icons.Material.Filled.Save" Class="mr-2" /> Stop & Save
+                            </div>
+                        </MudMenuItem>
+                        <MudMenuItem OnClick="@(() => StopServer(false))">
+                            <div style="display: flex; align-items: center;">
+                                <MudIcon Icon="Icons.Material.Filled.Stop" Class="mr-2" /> Force Stop
+                            </div>
+                        </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudMenu>
+                    <ActivatorContent>
+                        <MudButton FullWidth="true" 
+                                   Color="Color.Warning" 
+                                   StartIcon="Icons.Material.Filled.RestartAlt"
+                                   Disabled="@(!ServerService.IsRunning)"
+                                   EndIcon="Icons.Material.Filled.ArrowDropDown">
+                            Restart Server
+                        </MudButton>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem OnClick="@(() => RestartServer(true))">
+                            <div style="display: flex; align-items: center;">
+                                <MudIcon Icon="Icons.Material.Filled.Save" Class="mr-2" /> Restart & Save
+                            </div>
+                        </MudMenuItem>
+                        <MudMenuItem OnClick="@(() => RestartServer(false))">
+                            <div style="display: flex; align-items: center;">
+                                <MudIcon Icon="Icons.Material.Filled.RestartAlt" Class="mr-2" /> Force Restart
+                            </div>
+                        </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudButton FullWidth="true" 
+                           Color="Color.Info" 
+                           StartIcon="Icons.Material.Filled.Save"
+                           Disabled="@(!ServerService.IsRunning)"
+                           OnClick="@SaveWorld">
+                    Save World
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
