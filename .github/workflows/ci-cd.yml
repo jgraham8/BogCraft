@@ -27,11 +27,6 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Install Playwright
-        run: |
-          dotnet build ${{ env.TEST_PROJECT }} --configuration Release
-          pwsh ${{ env.TEST_PROJECT }}/bin/Release/net9.0/playwright.ps1 install
-
       - name: Restore dependencies
         run: dotnet restore
 
@@ -58,9 +53,7 @@ jobs:
           fi
 
       - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal --filter "Category!=UI"
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/ms-playwright
+        run: dotnet test --no-build --configuration Release --verbosity normal --filter "FullyQualifiedName!~UiTests"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
