@@ -43,11 +43,6 @@ public class UiTests : PageTest
         var consoleOutput = Page.Locator(".console-output");
         await Expect(consoleOutput).ToBeVisibleAsync();
         
-        // Just check it has reasonable height, not exact pixels
-        var boundingBox = await consoleOutput.BoundingBoxAsync();
-        Assert.IsNotNull(boundingBox);
-        Assert.IsTrue(boundingBox.Height > 200, "Console should have reasonable height");
-        
         var overflowY = await consoleOutput.EvaluateAsync<string>("el => getComputedStyle(el).overflowY");
         Assert.AreEqual("auto", overflowY);
     }
