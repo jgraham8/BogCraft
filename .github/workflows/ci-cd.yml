@@ -91,6 +91,8 @@ jobs:
   release-assets:
     name: Upload Release Assets
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: github.event_name == 'release' && github.event.release.target_commitish == 'main'
     
     steps:
