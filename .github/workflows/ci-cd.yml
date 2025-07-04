@@ -90,19 +90,28 @@ jobs:
   release-assets:
     name: Upload Release Assets
     runs-on: ubuntu-latest
-    needs: [test, build-and-package]
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' && github.event.release.target_commitish == 'main'
     
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
+    - name: Download latest artifacts from main
+      uses: dawidd6/action-download-artifact@v3
       with:
-        name: bogcraft-ui-${{ github.run_number }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        workflow: ci-cd.yml
+        branch: main
+        name_is_regexp: true
+        name: bogcraft-ui-.*
+        path: ./artifacts
+        
+    - name: Find latest artifact
+      id: find-artifact
+      run: |
+        latest=$(ls -t ./artifacts/bogcraft-ui-*.zip | head -1)
+        echo "artifact_path=$latest" >> $GITHUB_OUTPUT
         
     - name: Upload release assets
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          bogcraft-ui-${{ github.run_number }}.zip
+        files: ${{ steps.find-artifact.outputs.artifact_path }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
