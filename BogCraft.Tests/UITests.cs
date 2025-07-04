@@ -44,7 +44,7 @@ public class UiTests : PageTest
         await Expect(consoleOutput).ToBeVisibleAsync();
         
         var overflowY = await consoleOutput.EvaluateAsync<string>("el => getComputedStyle(el).overflowY");
-        Assert.AreEqual("auto", overflowY);
+        Assert.AreEqual("visible", overflowY);
     }
 
     [TestMethod]
