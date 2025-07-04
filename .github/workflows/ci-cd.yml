@@ -72,8 +72,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
       
-    - name: Publish Application
-      run: dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
+          - name: Publish Application (Self-Contained Optimized)
+      run: |
+        dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
           
     - name: Create deployment package
       run: |
@@ -106,10 +107,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
       
-    - name: Publish Application
-      run: dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
+          - name: Publish Self-Contained Optimized
+      run: |
+        dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
           
-    - name: Create deployment package
+    - name: Create deployment packages
       run: |
         Compress-Archive -Path ./publish/* -DestinationPath bogcraft-ui-${{ github.event.release.tag_name }}.zip
       shell: pwsh
@@ -118,5 +120,11 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: bogcraft-ui-${{ github.event.release.tag_name }}.zip
+        body: |
+          ## Self-Contained Release
+          
+          **No installation required** - Just extract and run BogCraft.UI.exe
+          
+          Size: ~50-70MB (optimized with trimming and compression)
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

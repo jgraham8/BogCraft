@@ -3,6 +3,31 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+
+        <!-- Self-contained optimizations -->
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>link</TrimMode>
+        <PublishSingleFile>true</PublishSingleFile>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+
+        <!-- Aggressive trimming -->
+        <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+        <EventSourceSupport>false</EventSourceSupport>
+        <UseSystemResourceKeys>true</UseSystemResourceKeys>
+
+        <!-- Remove unused features -->
+        <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+        <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+        <InvariantGlobalization>true</InvariantGlobalization>
+
+        <!-- Assembly trimming -->
+        <TrimmerDefaultAction>link</TrimmerDefaultAction>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,5 +46,16 @@
         <_ContentIncludedByDefault Remove="Components\Pages\Home.razor" />
         <_ContentIncludedByDefault Remove="Components\Routes.razor" />
         <_ContentIncludedByDefault Remove="Components\_Imports.razor" />
+    </ItemGroup>
+
+    <!-- Trim unused assemblies -->
+    <ItemGroup>
+        <TrimmerRootAssembly Include="BogCraft.UI" />
+        <TrimmerRootAssembly Include="MudBlazor" />
+    </ItemGroup>
+
+    <!-- Keep essential Blazor components -->
+    <ItemGroup>
+        <BlazorWebAssemblyLazyLoad Include="System.Text.Json.dll" />
     </ItemGroup>
 </Project>
