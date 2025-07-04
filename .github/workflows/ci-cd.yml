@@ -31,7 +31,8 @@ jobs:
         run: |
           dotnet build ${{ env.TEST_PROJECT }}
           dotnet tool install --global Microsoft.Playwright.CLI
-          playwright install
+          playwright install chromium
+          playwright install-deps
 
       - name: Restore dependencies
         run: dotnet restore
