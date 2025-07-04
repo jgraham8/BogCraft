@@ -30,8 +30,7 @@ jobs:
       - name: Install Playwright
         run: |
           dotnet build ${{ env.TEST_PROJECT }}
-          # Skip Playwright installation for now - focusing on build/deployment
-          echo "Skipping Playwright installation"
+          pwsh ${{ env.TEST_PROJECT }}/bin/Release/net9.0/playwright.ps1 install
 
       - name: Restore dependencies
         run: dotnet restore
