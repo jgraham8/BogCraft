@@ -4,17 +4,12 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
 
-        <!-- Self-contained optimizations -->
+        <!-- Self-contained optimizations (less aggressive for JSON compatibility) -->
         <PublishTrimmed>true</PublishTrimmed>
-        <TrimMode>link</TrimMode>
+        <TrimMode>partial</TrimMode>
         <PublishSingleFile>true</PublishSingleFile>
         <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
         <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-
-        <!-- Aggressive trimming -->
-        <IlcOptimizationPreference>Size</IlcOptimizationPreference>
-        <EventSourceSupport>false</EventSourceSupport>
-        <UseSystemResourceKeys>true</UseSystemResourceKeys>
 
         <!-- Remove unused features -->
         <UseRazorSourceGenerator>true</UseRazorSourceGenerator>

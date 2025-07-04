@@ -43,22 +43,19 @@ jobs:
         run: |
           dotnet run --project ${{ env.PROJECT_NAME }} --configuration Release --urls "http://localhost:5091" &
           APP_PID=$!
-          echo "App PID: $APP_PID"
           
-          # Wait up to 60 seconds for app to be ready
-          for i in {1..60}; do
+          # Wait up to 20 seconds for app to be ready
+          for i in {1..20}; do
             if curl -s http://localhost:5091 > /dev/null 2>&1; then
               echo "App is ready after $i seconds"
               break
             fi
-            echo "Waiting for app... ($i/60)"
             sleep 1
           done
           
           # Final check
           if ! curl -s http://localhost:5091 > /dev/null 2>&1; then
-            echo "App failed to start, checking logs..."
-            ps aux | grep dotnet
+            echo "App failed to start"
             kill $APP_PID 2>/dev/null || true
             exit 1
           fi
