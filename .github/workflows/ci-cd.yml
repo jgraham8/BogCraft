@@ -30,7 +30,7 @@ jobs:
       - name: Install Playwright
         run: |
           dotnet build ${{ env.TEST_PROJECT }}
-          pwsh ${{ env.TEST_PROJECT }}/bin/Release/net9.0/playwright.ps1 install chromium
+          pwsh ${{ env.TEST_PROJECT }}/bin/Debug/net9.0/playwright.ps1 install chromium
 
       - name: Restore dependencies
         run: dotnet restore
