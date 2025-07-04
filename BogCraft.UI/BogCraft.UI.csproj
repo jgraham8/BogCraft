@@ -6,19 +6,22 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
-
     <ItemGroup>
+        <PackageReference Include="Aspire.Microsoft.Extensions.ServiceDiscovery" Version="9.3.1" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.6" />
         <PackageReference Include="MudBlazor" Version="8.*"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Components\App.razor" />
+        <_ContentIncludedByDefault Remove="Components\Layout\MainLayout.razor" />
+        <_ContentIncludedByDefault Remove="Components\Pages\Error.razor" />
+        <_ContentIncludedByDefault Remove="Components\Pages\Home.razor" />
+        <_ContentIncludedByDefault Remove="Components\Routes.razor" />
+        <_ContentIncludedByDefault Remove="Components\_Imports.razor" />
+    </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="Components\App.razor" />
-      <_ContentIncludedByDefault Remove="Components\Layout\MainLayout.razor" />
-      <_ContentIncludedByDefault Remove="Components\Pages\Error.razor" />
-      <_ContentIncludedByDefault Remove="Components\Pages\Home.razor" />
-      <_ContentIncludedByDefault Remove="Components\Routes.razor" />
-      <_ContentIncludedByDefault Remove="Components\_Imports.razor" />
+      <ProjectReference Include="..\BogCraft.ServiceDefaults\BogCraft.ServiceDefaults.csproj" />
     </ItemGroup>
 </Project>
