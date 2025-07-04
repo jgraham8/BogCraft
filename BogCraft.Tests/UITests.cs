@@ -5,7 +5,7 @@ namespace BogCraft.Tests;
 [TestClass]
 public class UITests : PageTest
 {
-    private const string BaseUrl = "http://localhost:5000";
+    private const string BaseUrl = "http://localhost:5091";
 
     [TestMethod]
     public async Task Dashboard_LoadsAndShowsServerStatus()
