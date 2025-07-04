@@ -17,6 +17,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    if: github.event_name != 'release'
     
     steps:
     - uses: actions/checkout@v4
@@ -58,7 +59,7 @@ jobs:
     name: Build & Package
     runs-on: windows-latest
     needs: test
-    if: github.event_name == 'release' || github.ref == 'refs/heads/main'
+    if: github.event_name != 'release' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     
     steps:
     - uses: actions/checkout@v4
