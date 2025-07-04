@@ -5,9 +5,6 @@ using BogCraft.UI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Aspire service defaults
-builder.AddServiceDefaults();
-
 // Add MudBlazor services
 builder.Services.AddMudServices();
 
@@ -26,9 +23,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
-
-// Map default Aspire endpoints (health checks, etc.)
-app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline
 if (!app.Environment.IsDevelopment())
