@@ -20,40 +20,60 @@ jobs:
     if: github.event_name != 'release'
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Install Playwright
-      run: |
-        dotnet build ${{ env.TEST_PROJECT }}
-        dotnet tool install --global Microsoft.Playwright.CLI
-        playwright install
-        
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
-      
-    - name: Start Application
-      run: |
-        dotnet run --project ${{ env.PROJECT_NAME }} --configuration Release &
-        sleep 10
-        curl --retry 10 --retry-delay 2 --retry-connrefused http://localhost:5091 || echo "App not ready"
-      
-    - name: Test
-      run: dotnet test --no-build --configuration Release --verbosity normal
-      
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: '**/TestResults/**/*'
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install Playwright
+        run: |
+          dotnet build ${{ env.TEST_PROJECT }}
+          dotnet tool install --global Microsoft.Playwright.CLI
+          playwright install
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Start Application
+        run: |
+          dotnet run --project ${{ env.PROJECT_NAME }} --configuration Release --urls "http://localhost:5091" &
+          APP_PID=$!
+          echo "App PID: $APP_PID"
+          
+          # Wait up to 60 seconds for app to be ready
+          for i in {1..60}; do
+            if curl -s http://localhost:5091 > /dev/null 2>&1; then
+              echo "App is ready after $i seconds"
+              break
+            fi
+            echo "Waiting for app... ($i/60)"
+            sleep 1
+          done
+          
+          # Final check
+          if ! curl -s http://localhost:5091 > /dev/null 2>&1; then
+            echo "App failed to start, checking logs..."
+            ps aux | grep dotnet
+            kill $APP_PID 2>/dev/null || true
+            exit 1
+          fi
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/ms-playwright
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: '**/TestResults/**/*'
 
   build-and-package:
     name: Build & Package
@@ -62,32 +82,32 @@ jobs:
     if: github.event_name != 'release' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Publish Application (Self-Contained Optimized)
-      run: |
-        dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
-          
-    - name: Create deployment package
-      run: |
-        Compress-Archive -Path ./publish/* -DestinationPath bogcraft-ui-${{ github.run_number }}.zip
-      shell: pwsh
-        
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: bogcraft-ui-${{ github.run_number }}
-        path: |
-          publish/
-          bogcraft-ui-${{ github.run_number }}.zip
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish Application (Self-Contained Optimized)
+        run: |
+          dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
+
+      - name: Create deployment package
+        run: |
+          Compress-Archive -Path ./publish/* -DestinationPath bogcraft-ui-${{ github.run_number }}.zip
+        shell: pwsh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bogcraft-ui-${{ github.run_number }}
+          path: |
+            publish/
+            bogcraft-ui-${{ github.run_number }}.zip
 
   release-build:
     name: Build for Release
@@ -97,34 +117,34 @@ jobs:
     if: github.event_name == 'release'
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-        
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Publish Self-Contained Optimized
-      run: |
-        dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
-          
-    - name: Create deployment packages
-      run: |
-        Compress-Archive -Path ./publish/* -DestinationPath bogcraft-ui-${{ github.event.release.tag_name }}.zip
-      shell: pwsh
-        
-    - name: Upload release assets
-      uses: softprops/action-gh-release@v1
-      with:
-        files: bogcraft-ui-${{ github.event.release.tag_name }}.zip
-        body: |
-          ## Self-Contained Release
-          
-          **No installation required** - Just extract and run BogCraft.UI.exe
-          
-          Size: ~50-70MB (optimized with trimming and compression)
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Publish Self-Contained Optimized
+        run: |
+          dotnet publish ${{ env.PROJECT_NAME }} -c Release -r win-x64 --self-contained true -o ./publish
+
+      - name: Create deployment packages
+        run: |
+          Compress-Archive -Path ./publish/* -DestinationPath bogcraft-ui-${{ github.event.release.tag_name }}.zip
+        shell: pwsh
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bogcraft-ui-${{ github.event.release.tag_name }}.zip
+          body: |
+            ## Self-Contained Release
+            
+            **No installation required** - Just extract and run BogCraft.UI.exe
+            
+            Size: ~50-70MB (optimized with trimming and compression)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
