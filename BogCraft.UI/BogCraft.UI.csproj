@@ -14,7 +14,6 @@
         <!-- Remove unused features -->
         <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
         <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
-        <InvariantGlobalization>true</InvariantGlobalization>
 
         <!-- Assembly trimming -->
         <TrimmerDefaultAction>link</TrimmerDefaultAction>
