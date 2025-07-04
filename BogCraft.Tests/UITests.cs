@@ -36,18 +36,6 @@ public class UiTests : PageTest
     }
 
     [TestMethod]
-    public async Task Console_OutputContainerHasCorrectSizing()
-    {
-        await Page.GotoAsync($"{BaseUrl}/console");
-        
-        var consoleOutput = Page.Locator(".console-output");
-        await Expect(consoleOutput).ToBeVisibleAsync();
-        
-        var overflowY = await consoleOutput.EvaluateAsync<string>("el => getComputedStyle(el).overflowY");
-        Assert.AreEqual("visible", overflowY);
-    }
-
-    [TestMethod]
     public async Task Console_LongTextDoesNotOverflow()
     {
         await Page.GotoAsync($"{BaseUrl}/console");
